@@ -29,4 +29,19 @@
  */
 export function formatChaiMenu(items) {
   // Your code here
+  //Item array is missing:
+  if(!Array.isArray(items) || items.length==0) return ""
+
+  //filtering out the elements that do not have a price:
+  let propperItems=items.filter((item)=> item.price>0)
+  propperItems=propperItems.filter((item)=> typeof item.name === 'string')
+  propperItems=propperItems.filter((item)=> item.name.length>0)
+
+  //creating every elements in desired string format:
+  const newarr=propperItems.map((item) => `${item.name.toUpperCase()} - Rs.${item.price}`)
+
+  //creating the last string
+  return newarr.join(' | ')
+
 }
+

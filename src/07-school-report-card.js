@@ -42,4 +42,67 @@
  */
 export function generateReportCard(student) {
   // Your code here
+  /**
+   *  Validation:
+ *   - Agar student object nahi hai ya null hai, return null
+ *   - Agar student.name string nahi hai ya empty hai, return null
+ *   - Agar student.marks object nahi hai ya empty hai (no keys), return null
+ *   - Agar koi mark valid number nahi hai (not between 0 and 100 inclusive),
+ *     return null
+   */
+
+  function invalidMarks(marks){
+    for(let value of Object.values(marks))
+      if(typeof value !== 'number' || value<0 || value > 100) 
+        return true
+    return false
+  }
+
+
+  function grader(percentage){
+    if(percentage >= 90) return "A+" 
+    if(percentage >= 80) return "A" 
+    if(percentage >= 70) return "B" 
+    if(percentage >= 60) return "C" 
+    if(percentage >= 40) return "D"
+    return "F"
+  }
+
+
+  if(!student || 
+    !student.name || typeof student.name !== 'string' || !Object.hasOwn(student,'marks') ||
+    Object.values(student.marks).length===0 || typeof student.marks !== 'object' ||
+    invalidMarks(student.marks)
+  ) return null
+
+  let totalMarks=Object.values(student.marks).reduce((acc,curr)=>acc+curr,0);
+  let percentage =parseFloat(((totalMarks / (Object.values(student.marks).length * 100)) * 100).toFixed(2))
+  let grade=grader(percentage);
+
+  let max=Number.NEGATIVE_INFINITY;
+  let min=Number.POSITIVE_INFINITY;
+
+  let maxSub='',minSub='',pass=[],fail=[];
+
+  for(let [key,val] of Object.entries(student.marks)){
+    if(val>max){
+      maxSub=key
+      max=val
+    }
+
+    if(val<min){
+      minSub=key
+      min=min
+    }
+
+    if(val>=40) pass.push(key)
+    else fail.push(key)
+  }
+
+  return {
+    name: student.name, totalMarks: totalMarks, percentage: percentage, grade: grade,
+    highestSubject: maxSub, lowestSubject: minSub,
+    passedSubjects: pass, failedSubjects: fail,
+    subjectCount: Object.values(student.marks).length 
+  }
 }

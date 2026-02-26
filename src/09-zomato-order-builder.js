@@ -1,3 +1,5 @@
+//Not finished yet.
+
 /**
  * 🍕 Zomato Order Builder
  *
@@ -8,7 +10,7 @@
  * Rules:
  *   - cart is array of items:
  *     [{ name: "Butter Chicken", price: 350, qty: 2, addons: ["Extra Butter:50", "Naan:40"] }, ...]
- *   - Each addon string format: "AddonName:Price" (split by ":" to get price)
+ *   - Each addon string format: "AddonName:Price" (s plit by ":" to get price)
  *   - Per item total = (price + sum of addon prices) * qty
  *   - Calculate:
  *     - items: array of { name, qty, basePrice, addonTotal, itemTotal }
@@ -47,4 +49,73 @@
  */
 export function buildZomatoOrder(cart, coupon) {
   // Your code here
+  let finalObj = {
+    items: [],
+    subtotal: 0,
+    deliveryFee: 0,
+    gst: 0,
+    discount: 0,
+    grandTotal: 0,
+  };
+  if (!Array.isArray(cart) || cart.length === 0) return null;
+  let subtotal = 0;
+  for (let item of cart) {
+    if (item.qty <= 0) continue; //<0 quantity meaning skip
+
+    //extracting the adon price and names
+    let addonze = {};
+    if(Array.isArray(item.addons)){
+    for (let adon of item.addons)
+      addonze[adon.split(":")[0]] = parseInt(adon.split(":")[1]);}
+    let itemTotal =
+      (item.price +
+        Object.values(addonze).reduce((acc, init) => acc + init, 0)) *
+      item.qty;
+    subtotal += itemTotal;
+
+    //Delivery fee:
+    let deliveryFee =
+      subtotal < 500 ? 30 : subtotal >= 500 && subtotal < 1000 ? 15 : 0;
+    let gst = parseFloat((subtotal * 0.05).toFixed(2));
+
+    /**
+     *  "FIRST50"  => 50% off subtotal, max Rs 150 (use Math.min)
+     *     - "FLAT100"  => flat Rs 100 off
+     *     - "FREESHIP" => delivery fee becomes 0 (discount = original delivery fee value)
+     *     - null/undefined/invalid string => no discount (0)
+     */
+
+
+    let validCoupons = ["FIRST50","FLAT100", "FREESHIP"];
+    let discount = 0;
+    if (typeof coupon !== "string") discount = 0;
+    else {
+      if (validCoupons.includes(coupon.toUpperCase())) {
+        if (coupon.toUpperCase() === "FIRST50") discount = Math.min(150,subtotal*0.5);
+        else if (coupon.toUpperCase() === "FLAT100") discount=100;
+        else if (coupon.toUpperCase() === "FREESHIP") {discount=deliveryFee; deliveryFee=0;}
+      }
+    }
+
+    let grandTotal = subtotal + deliveryFee + gst - discount;
+    if (grandTotal < 0) grandTotal = 0;
+
+
+    // {{ items: Array<{ name: string, qty: number, basePrice: number, addonTotal: number, itemTotal: number }>, subtotal: number, deliveryFee: number, gst: number, discount: number, grandTotal: number } | null}
+    finalObj.items.push({
+      name: item.name,
+      qty: item.qty,
+      basePrice: item.price,
+      addonTotal: Object.values(addonze).reduce((acc, init) => acc + init, 0),
+      itemTotal: itemTotal,
+    });
+
+    finalObj.subtotal = subtotal;
+    finalObj.deliveryFee = deliveryFee;
+    finalObj.gst = gst;
+    finalObj.discount = discount;
+    finalObj.grandTotal = grandTotal;
+  }
+
+  return finalObj;
 }

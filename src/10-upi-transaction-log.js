@@ -48,4 +48,78 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+
+  //checking the edge casses
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+
+  //Filtering out only the valid transactions.
+  let validType = ["credit", "debit"];
+  let validTransactions = transactions.filter(
+    (item) => item.amount > 0 && validType.includes(item.type.toLowerCase()),
+  );
+  if (validTransactions.length === 0) return null;
+
+  //Calculating the required fields:
+  let totalCredit = validTransactions.reduce(
+    (acc, ele) =>
+      ele.type.toLowerCase() === "credit" ? acc + ele.amount : acc,
+    0,
+  );
+  let totalDebit = validTransactions.reduce(
+    (acc, ele) => (ele.type.toLowerCase() === "debit" ? acc + ele.amount : acc),
+    0,
+  );
+  let netBalance = totalCredit - totalDebit;
+  let transactionCount = validTransactions.length;
+  let avgTransaction = Math.round(
+    (totalCredit + totalDebit) / transactionCount,
+  );
+
+  //Highest Transaction:
+  let highest = validTransactions[0];
+  for (let i of validTransactions)
+    highest = i.amount > highest.amount ? i : highest;
+
+  //category Breakdown:
+  let categoryBreakdown = {};
+  for (let i of validTransactions) {
+    if (Object.hasOwn(categoryBreakdown, i.category))
+      categoryBreakdown[i.category] += i.amount;
+    else categoryBreakdown[i.category] = i.amount;
+  }
+
+  //Frequent contact:
+  let objAppearance = {};
+  for (let i of validTransactions) {
+    if (Object.hasOwn(objAppearance, i.to)) objAppearance[i.to]++;
+    else objAppearance[i.to] = 1;
+  }
+
+  let maxAppearance = Number.NEGATIVE_INFINITY;
+  let maxname = ""; //this is returned
+  for (let [name, value] of Object.entries(objAppearance)) {
+    if (maxAppearance < value) {
+      maxAppearance = value;
+      maxname = name;
+    }
+  }
+
+  //All above 100:
+  let allAbove100 = validTransactions.every((item) => item.amount > 100);
+
+  //some above 5000:
+  let someAbove5000 = validTransactions.some((item) => item.amount >= 5000);
+
+  return {
+    totalCredit: totalCredit,
+    totalDebit: totalDebit,
+    netBalance: netBalance,
+    transactionCount: transactionCount,
+    avgTransaction: avgTransaction,
+    highestTransaction: highest,
+    categoryBreakdown: categoryBreakdown,
+    frequentContact: maxname,
+    allAbove100: allAbove100,
+    hasLargeTransaction: someAbove5000,
+  };
 }

@@ -29,4 +29,10 @@
  */
 export function maskAadhaar(aadhaarNumber) {
   // Your code here
+  //Input strning does not exist:
+  const regex = /^\d+$/;
+  if(typeof aadhaarNumber != 'string' || aadhaarNumber.length != 12 || !regex.test(aadhaarNumber)) return "INVALID";
+
+  let encryptedcode='XXXX-XXXX-'+aadhaarNumber.slice(-4)
+  return encryptedcode;
 }

@@ -31,8 +31,7 @@
  *
  * @example
  *   parseWhatsAppMessage("25/01/2025, 14:30 - Rahul: Bhai party kab hai? 😂")
- *   // => { date: "25/01/2025", time: "14:30", sender: "Rahul",
- *   //      text: "Bhai party kab hai? 😂", wordCount: 5, sentiment: "funny" }
+ *   "❤" ya "love" ya "pyaar" 
  *
  *   parseWhatsAppMessage("01/12/2024, 09:15 - Priya: I love this song")
  *   // => { date: "01/12/2024", time: "09:15", sender: "Priya",
@@ -40,4 +39,42 @@
  */
 export function parseWhatsAppMessage(message) {
   // Your code here
+  if(typeof message != 'string' || !message.includes('-') || !message.includes(':') || message.indexOf(':')===message.lastIndexOf(':')) return null;
+  message=message.trim()
+
+    //"DD/MM/YYYY, HH:MM - Sender Name: Message text here"
+  let date=message.slice(0,message.indexOf(','));
+  let time=message.slice(message.indexOf(',')+1,message.indexOf('-'))
+  let senderName=message.slice(message.indexOf('-')+1,message.indexOf(':',message.indexOf(':')+1))
+  let text=message.slice(message.indexOf(':',message.indexOf(':')+1)+1)
+
+  const sentimentAnalyser=(text)=>{
+    text=text.toLowerCase()
+    let funny=["😂",":)","haha"];
+    let love=["❤","love","pyaar"];
+
+    for(let i of funny){
+      if(text.includes(i)) return 'funny'
+    }
+
+    for(let i of love){
+      if(text.includes(i)) return 'love'
+    }
+
+    return 'neutral'
+  }
+
+  let sentiment=sentimentAnalyser(text);
+
+  // => { date: "01/12/2024", time: "09:15", sender: "Priya",
+  //      text: "I love this song", wordCount: 4, sentiment: "love" }  
+
+  return {
+    date: date.trim(),
+    time:time.trim(),
+    sender:senderName.trim(),
+    text:text.trim(),
+    wordCount:text.trim().split(' ').length,
+    sentiment:sentiment
+  }
 }
